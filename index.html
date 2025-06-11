@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>The World Breathes - Shreyash Lata</title>
+  <style>
+    body, html {
+      font-family: 'gibson', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+    }
+    canvas {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 6;
+      background: transparent;
+      pointer-events: none;
+    }
+    video {
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      display: block;
+    }
+    .handHint {
+      width: 80px;
+      height: 100px;
+      border: 2px dotted white;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.4;
+      animation: breathe 2s infinite ease-in-out;
+      transition: box-shadow 0.5s ease, opacity 0.5s ease;
+    }
+
+    #handHint2 {
+      width: 60px;
+      height: 75px;
+      border: 2px dotted white;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.4;
+      animation: breathe 2s infinite ease-in-out;
+      transition: box-shadow 0.5s ease, opacity 0.5s ease;
+    }
+
+    #handHint2.glow {
+      animation: none;
+      opacity: 1;
+      box-shadow: 0 0 20px 6px rgba(255,255,255,0.6);
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+
+    .handHint.glow {
+      animation: none;
+      opacity: 1;
+      box-shadow: 0 0 20px 6px rgba(255,255,255,0.6);
+    }
+    #skipButton {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 10;
+      padding: 10px 16px;
+      background-color: #ffffff;
+      color: #000000;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    #interactionPrompt {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Gibson', sans-serif;
+      color: white;
+      opacity: 1;
+      transition: opacity 1s ease;
+      background: rgba(0, 0, 0, 0.0); /* change this from black */
+      pointer-events: none;
+    }
+    #poeticOverlay {
+      z-index: 20; /* ⬅ text & hint above canvas */
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    #promptTextArea {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 140px; /* 💡 Match total height of 2 poetic lines */
+      width: 100%;
+      position: relative;
+    }
+
+    #promptHintArea {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    #promptHintAreaHome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    #promptHintArea2 {
+      position: absolute;
+      bottom: 3vh;
+      left: 45%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    @keyframes fadeBlink {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    #palmHintVisual2 svg {
+      transform: scale(0.5); /* Reduce to half size */
+    }
+
+    #palmHintVisualHome svg {
+      transform: scale(0.8); /* Reduce to half size */
+    }
+
+    #promptHintArea2.visible {
+      opacity: 1;
+    }
+
+    #promptHintAreaHome.visible {
+      opacity: 1;
+    }
+
+    #poeticLines {
+      text-align: center;
+      transition: transform 0.8s ease, opacity 0.8s ease;
+      transform: scale(1);
+      opacity: 1;
+      z-index: 11;
+    }
+
+    #interactionPrompt.scaledDown #poeticLines {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+
+    #poeticLines p {
+      font-size: 2.5rem;
+      margin: 10px 0;
+      text-align: center;
+      animation: fadeIn 2s ease-in;
+    }
+
+    #handHint {
+      margin-top: 40px;
+      width: 80px;
+      height: 100px;
+      border: 2px dotted white;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.4;
+      animation: breathe 2s infinite ease-in-out;
+      transition: box-shadow 0.5s ease, opacity 0.5s ease;
+    }
+
+    #handHintHome {
+      width: 70px;
+      height: 90px;
+      border: 2px dotted white;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.4;
+      animation: breathe 2s infinite ease-in-out;
+      transition: box-shadow 0.5s ease, opacity 0.5s ease;
+    }
+
+    #exitHandHint {
+      margin-top: 40px;
+      width: 80px;
+      height: 100px;
+      border: 2px dotted white;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0.4;
+      animation: breathe 2s infinite ease-in-out;
+      transition: box-shadow 0.5s ease, opacity 0.5s ease;
+    }
+
+    #palmHintVisual {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #palmHintVisualHome {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #palmHintVisual2 {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+
+
+    #handHint.glow {
+      animation: none; /* ❌ Disable blinking */
+      opacity: 1;
+      box-shadow: 0 0 20px 6px rgba(255,255,255,0.6); /* ✅ Stronger glow */
+    }
+
+    #handHintHome.glow {
+      animation: none; /* ❌ Disable blinking */
+      opacity: 1;
+      box-shadow: 0 0 20px 6px rgba(255,255,255,0.6); /* ✅ Stronger glow */
+    }
+
+    #exitHandHint.glow {
+      animation: none;
+      opacity: 1;
+      box-shadow: 0 0 20px 6px rgba(255,255,255,0.6);
+    }
+
+    #palmIcon {
+      width: 70px;
+      height: 100px;
+      stroke: white;
+      opacity: 0.8;
+      transition: opacity 0.5s ease;
+    }
+
+    #handHint.glow #palmIcon {
+/*      animation: breathe 0.3s infinite ease-in;*/
+      opacity: 1;
+    }
+
+    #hintText {
+      margin-top: 12px;
+      font-size: 1rem;
+      color: white;
+      opacity: 0.7;
+      font-family: 'Gibson', sans-serif;
+      text-align: center;
+      transition: opacity 0.4s ease;
+    }
+
+    #hintText.fade-out {
+      opacity: 0;
+    }
+
+    #hintText.animate {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+
+    #hintTextHome {
+      margin-top: 12px;
+      font-size: 1rem;
+      color: white;
+      opacity: 0.7;
+      font-family: 'Gibson', sans-serif;
+      text-align: center;
+      transition: opacity 0.4s ease;
+    }
+
+    #hintTextHome.fade-out {
+      opacity: 0;
+    }
+
+    #hintTextHome.animate {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+
+    #hintText2 {
+      margin-top: 14px;
+      font-size: 1.2rem;
+      color: white;
+      opacity: 0.7;
+      font-family: 'Gibson', sans-serif;
+      text-align: center;
+      transition: opacity 0.4s ease;
+    }
+
+    #hintText2.fade-out {
+      opacity: 0;
+    }
+
+    #hintText2.animate {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+
+    #poeticLines.controlMessage {
+      animation: scaleUpFadeIn 1s ease forwards;
+    }
+
+    #controlMessage {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      text-align: center;
+    }
+
+    #controlMessage.visible {
+      display: block;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #controlMessage p {
+      font-size: 2.5rem;
+      margin: 10px 0;
+      text-align: center;
+      animation: fadeIn 0.3s ease-in;
+      font-family: 'Gibson', sans-serif;
+      white-space: normal;
+    }
+
+    #poeticLines.disruptMessage {
+      animation: scaleUpFadeIn 1s ease forwards;
+    }
+
+    #disruptMessage {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      text-align: center;
+    }
+
+    #disruptMessage.visible {
+      display: block;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #disruptMessage p {
+      font-size: 2.5rem;
+      margin: 10px 0;
+      text-align: center;
+      animation: fadeIn 0.3s ease-in;
+      font-family: 'Gibson', sans-serif;
+      white-space: normal;
+    }
+
+    #poeticLines.interventionMessage {
+      animation: scaleUpFadeIn 1s ease forwards;
+    }
+
+    #interventionMessage {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+      text-align: center;
+    }
+
+    #interventionMessage.visible {
+      display: block;
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    #interventionMessage p {
+      font-size: 2.5rem;
+      margin: 10px 0;
+      text-align: center;
+      animation: fadeIn 0.3s ease-in;
+      font-family: 'Gibson', sans-serif;
+      white-space: normal;
+    }
+
+    #progressOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 8px;
+      width: 100%;
+      background: transparent;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    #loadingBarContainer {
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    #loadingBar {
+      width: 0%;
+      height: 100%;
+      transition: width 0.2s ease;
+      background: linear-gradient(to right, #7B8C7E, #7B8C7E);
+      box-shadow: 0 0 8px rgba(123, 140, 126, 0.5);
+    }
+
+    #exitHintContainer {
+      position: absolute;
+      bottom: 80px;
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 1s ease forwards;
+    }
+
+    #exitHintContainer.show {
+      display: flex;
+    }
+
+
+    @keyframes fadeLeftToRight {
+      0% {
+        clip-path: inset(0 0 0 0);
+        opacity: 1;
+      }
+      100% {
+        clip-path: inset(0 0 0 100%);
+        opacity: 0;
+      }
+    }
+
+    .fade-out-bar {
+      animation: fadeLeftToRight 1s ease forwards;
+    }
+
+    #exitPrompt {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 11;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: 'Gibson', sans-serif;
+      color: white;
+      background: rgba(0,0,0,0.5);
+      pointer-events: auto;
+    }
+
+    #nextArrow {
+      position: absolute;
+      right: 50px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 4rem;
+      opacity: 0;
+      pointer-events: auto;
+      animation: arrowBreathe 2s ease-in-out infinite;
+      transition: opacity 1s ease;
+      cursor: pointer;
+    }
+
+    #playIcon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease, transform 0.4s ease, filter 0.4s ease;
+      z-index: 30;
+      animation: playBreathe 2.8s ease-in-out infinite;
+    }
+
+    #playIcon.glow {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #playIcon.glow polygon {
+      filter: drop-shadow(0 0 12px white);
+    }
+
+    #playIcon.glow .playTriangle {
+      transform: scale(1.1);
+      transition: transform 0.4s ease;
+    }
+
+    #playIconHome {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.85);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease, transform 0.4s ease, filter 0.4s ease;
+      z-index: 30;
+      animation: playBreathe 2.8s ease-in-out infinite;
+    }
+
+    #playIconHome.glow {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    #playIconHome.glow polygon {
+      filter: drop-shadow(0 0 12px white);
+    }
+
+    #playIconHome.glow .playTriangle {
+      transform: scale(1.1);
+      transition: transform 0.4s ease;
+    }
+
+    #progressCircle {
+      stroke-linecap: round;
+      opacity: 0.8;
+    }
+
+    #progressCircleHome {
+      stroke-linecap: round;
+      opacity: 0.8;
+    }
+
+    #exitHintText {
+      transition: opacity 0.3s ease;
+    }
+
+    .dev-skip {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      z-index: 9999;
+      padding: 8px 12px;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid white;
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0.4;
+      transition: opacity 0.3s ease;
+    }
+    .dev-skip:hover {
+      opacity: 1;
+    }
+
+    .promptBackground {
+      position: absolute;
+      object-fit: none;
+      opacity: 0;
+      z-index: 0;
+      transition: opacity 1s ease, transform 1.5s ease;
+      pointer-events: none;
+    }
+
+    .promptBackground.startZoomed {
+      transform: scale(0);      /* Start zoomed in */
+      opacity: 0;
+      transition: transform 1.8s ease, opacity 1.8s ease;
+    }
+
+    .promptBackground.shrinkAndBrighten {
+      transform: scale(0.1);        /* Shrink to normal */
+      opacity: 1;
+    }
+
+    .promptBackground.dynamic {
+      transition: transform 0.6s ease, opacity 0.6s ease; /* JS will handle animation via transform/opacity */
+      will-change: transform, opacity;
+    }
+    .promptBackground.breathe {
+      animation: backgroundBreath 5s ease-in-out infinite;
+      opacity: 0.25;
+    }
+
+    .promptBackground.fadeout {
+      transform: scale(3.5) rotate(12deg); /* scale and rotate */
+      opacity: 0;
+      transition: transform 2s ease, opacity 2s ease;
+    }
+
+  
+    #promptBg2,
+    #promptBg3,
+    #promptBg4,
+    #promptBg5 {
+      position: absolute;
+      transition: transform 0.6s ease, opacity 0.6s ease; /* <--- Smooth transitions */
+    }
+
+    #promptBg1 {
+      position: absolute;
+      transition: transform 0.6s ease, opacity 0.6s ease; 
+    }
+
+
+    #devSkipLoss {
+      margin-bottom: 0;
+    }
+
+    #devSkipIntervention {
+      margin-bottom: 0;
+    }
+
+    .start-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: white;
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-family: 'Gibson', sans-serif;
+    }
+
+    .start-text {
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .start-hand-hint {
+      width: 60px;
+      height: 60px;
+      background-image: url('your-hand-icon.svg');
+      background-size: contain;
+      background-repeat: no-repeat;
+      margin-top: 20px;
+      opacity: 0.5;
+      animation: pulse 2s infinite;
+    }
+
+    body, .promiseBox, #reflectionHeading {
+      font-family: 'gibson', sans-serif;
+    }
+
+    #reflectionContainer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: black;
+      pointer-events: auto;
+      color: white;
+      padding: 0 5vw;
+      /*z-index: 3;*/
+    }
+
+    #promiseSelectSection {
+      flex: 0.6;
+    }
+
+    #reflectionHeading {
+      font-size: 3.5rem;
+      font-weight: 200;
+      margin-top: -1rem;
+      margin-bottom: 2rem;
+      color: white;
+    }
+
+    #promiseList {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    #drawSection {
+      flex: 1.4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #drawSection.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    #drawCanvasWrapper {
+      position: relative;
+      width: 420px;
+      height: 420px;
+      transition: transform 0.6s ease-out;
+      transform-origin: center;
+    }
+
+    .scaleUpCircle {
+      animation: scaleCircle 3s ease-out forwards;
+    }
+
+    @keyframes scaleCircle {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.80); }
+      100% { transform: scale(1.02); }
+    }
+
+
+    #drawCanvasWrapper.animateScale {
+      animation: scaleEarth 2.6s ease forwards;
+    }
+
+    @keyframes scaleEarth {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1.7);
+        opacity: 1;
+      }
+    }
+
+    .scaleUpEarth {
+      animation: scaleEarth 2s ease-out forwards;
+    }
+
+    @keyframes scaleEarth {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.30); }
+      100% { transform: scale(1.02); }
+    }
+
+    .promiseBox {
+      position: relative;
+      overflow: hidden;
+      padding: 20px 24px;
+      margin: 10px 0;
+      border-radius: 14px;
+      border: 0.1px solid #6a7ba2;
+      background: transparent;
+      color: #ffffff;
+      font-size: 1.6rem;
+      transition: all 0.3s ease;
+      pointer-events: auto;
+      text-align: center;
+    }
+
+    .promiseProgress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .promiseProgress .bg {
+      fill: none;
+      stroke: white;
+      stroke-width: 5;
+    }
+
+    .promiseProgress .fg {
+      fill: none;
+      stroke: white; /* Your cohesive blue */
+      stroke-width: 3;
+      stroke-dasharray: 80;
+      stroke-dashoffset: 80;
+      transition: stroke-dashoffset 0.1s linear;
+    }
+
+    .promiseBox:hover {
+      box-shadow: 0 0 10px 2px rgba(255,255,255,0.3);
+    }
+
+    .promiseBox.hand-hover {
+      box-shadow: 0 0 10px 2px rgba(255,255,255,0.3);
+    }
+
+    .promiseBox.hand-hover::before {
+      opacity: 1;
+    }
+
+    .promiseBox::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      border: 3px solid #6a7ba2;
+      transform: scale(1.1);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .promiseBox:hover::before {
+      opacity: 1;
+    }
+
+    .promiseBox::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+      border: 2px solid #6a7ba2;
+      transform: scale(1.05);
+      pointer-events: none;
+      opacity: var(--progress, 0);
+      transition: opacity 0.2s ease;
+    }
+
+    .promiseBox.selected {
+      border-color: #6a7ba2;
+      background: rgb(106, 123, 162, 0.1);
+      font-weight: 700;
+      color: #6a7ba2;
+    }
+
+    .promiseBox.blurred {
+      filter: blur(2px);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .promiseBox.glow {
+        box-shadow: 0 0 20px rgba(143, 203, 155, 0.7);
+      }
+
+
+    .word-fade {
+      display: inline-block;
+      opacity: 0;
+      color: white;
+      animation: fadeInWord 0.3s ease forwards;
+    }
+
+    #reflectionContainer {
+      transition: opacity 1s ease;
+    }
+
+    @keyframes fadeInWord {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+
+      .fade-glow {
+        opacity: 0;
+        animation: fadeGlow 3.5s ease forwards;
+      }
+
+      @keyframes fadeGlow {
+        0% {
+          opacity: 0;
+          text-shadow: 0 0 8px rgba(106, 123, 162, 0.4); /* subtle glow */
+        }
+        100% {
+          opacity: 1;
+          text-shadow: 0 0 12px rgba(106, 123, 162, 0.2); /* softer after fade */
+        }
+      }
+
+      .fade-glow2 {
+        opacity: 0;
+        animation: fadeGlow 4s ease forwards;
+      }
+
+      @keyframes fadeGlow {
+        0% {
+          opacity: 0;
+          text-shadow: 0 0 8px rgba(106, 123, 162, 0.4); /* subtle glow */
+        }
+        100% {
+          opacity: 1;
+          text-shadow: 0 0 12px rgba(106, 123, 162, 0.2); /* softer after fade */
+        }
+      }
+
+
+
+    @keyframes pulse {
+      0% { transform: scale(1); opacity: 0.4; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+      100% { transform: scale(1); opacity: 0.4; }
+    }
+
+
+    @keyframes backgroundBreath {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.03);
+      }
+    }
+
+    @keyframes playBreathe {
+      0%, 100% { transform: translate(-50%, -50%) scale(0.85); }
+      50% { transform: translate(-50%, -50%) scale(0.95); }
+    }
+
+    @keyframes arrowBreathe {
+      0%, 100% { transform: translateY(-50%) scale(1); opacity: 0.5; }
+      50% { transform: translateY(-50%) scale(1.15); opacity: 1; }
+    }
+
+
+    @keyframes scaleUpFadeIn {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes breathe {
+      0% { opacity: 0.2; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.05); }
+      100% { opacity: 0.2; transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+  </style>
+  <link rel="stylesheet" href="https://use.typekit.net/ewt5uce.css">
+</head>
+<body>
+  <video id="introVideo" style="display: none;" playsinline>
+    <source src="TheWorldInDisruption_wMusicV2.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <button id="devSkipIntervention" class="dev-skip" style="display: none;">Skip to Intervention Prompt</button>
+  <button id="devSkipLoss" class="dev-skip" style="display: none;">⏩ Skip to Loss</button>
+  <button id="skipButton" style="display: none;">Skip</button>
+  <button id="devSkipDisrupt" class="dev-skip" style="display: none;">⏩ Skip to Disrupt</button>
+
+
+<!-- HOME SCREEN CONTAINER -->
+<section id="homeScreen" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #0A0A0A; z-index: 5; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+  
+  <!-- Intro Text (Top-Left) -->
+<!--   <div id="homeIntro" style="position: absolute; top: 5%; left: 40px; max-width: 22%; color: white;font-family: 'Gibson', sans-serif; font-size: 1.05rem; line-height: 1.6; opacity: 0.3;">
+     <p><strong>A poetic digital journey through environmental emotion.</strong><br>
+Navigate phases of <em>Control</em>, <em>Disruption</em>, <em>Loss</em>, <em>Intervention</em>, and <em>Reflection</em> —<br>
+where fragmented type, gesture, and atmosphere come together to shape the experience with you.</p>
+  </div> -->
+
+ <div id="homeIntroText" style="
+  position: absolute;
+  bottom: 32%;
+  max-width: 50%;
+  font-size: 1rem;
+  font-family: 'Gibson', sans-serif;
+  color: white;
+  line-height: 1.7;
+  text-align: center;
+">
+  <div class="tiltedLine" style="transform: rotate(-3deg); opacity: 0.35; transition: transform 2.5s ease, opacity 0.5s ease; margin-bottom: 10px; font-size: 1.1rem;">
+    <strong>A poetic journey through environmental emotion.</strong>
+  </div>
+  <div class="tiltedLine" style="transform: rotate(0deg); opacity: 0.35; transition: transform 2s ease; opacity 0.5s ease">
+    Navigate <em>Control</em>, <em>Disruption</em>, <em>Loss</em>,
+    <em>Intervention</em>, <em>Reflection</em>
+  </div>
+  <div class="tiltedLine" style="transform: rotate(-1deg); opacity: 0.35; transition: transform 1s ease; opacity 0.5s ease">
+    as type, gesture, and atmosphere shape the experience with you.
+  </div>
+</div>
+
+
+  <!-- Animated Logo GIF (Center) -->
+  <div id="logoContainer" style="position: relative; margin-bottom: 380px; z-index: 8;">
+    <img id="logoGIF" src="logo4GIFAlpha.gif" alt="Animated logo: The World Breathes" width="470" height="470" style="display: block;" />
+  </div>
+
+  <div style="width: 100%; height: 100%; position: absolute; align-items: center;
+      display: flex;
+      justify-content: center;
+      padding-bottom: 100px;">
+    
+  <img id="promptBg1" src="cbg.png" class="promptBackground"/>
+  
+  <!-- Play Icon (Initially hidden) -->
+  <svg id="playIconHome" viewBox="0 0 100 100" width="140" height="140" style="display: none; position: absolute; top: 41%; left: 50%; transform: translate(-50%, -50%);">
+    <circle cx="50" cy="50" r="48" fill="none" stroke="white" stroke-width="2" stroke-dasharray="5,5" opacity="0.4" />
+    <circle id="progressCircleHome" cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="3"
+            stroke-dasharray="251.2" stroke-dashoffset="251.2" 
+            style="transition: stroke-dashoffset 0.1s linear;" />
+    <polygon points="40,30 70,50 40,70" fill="white" />
+  </svg>
+
+  </div>
+
+  <!-- Palm Hint Area (Bottom Center) -->
+  <div id="promptHintAreaHome" style="position: absolute; bottom: 10%; display: flex; flex-direction: column; align-items: center; opacity: 0.7;">
+        <div id="handHintHome">
+          <div id="palmHintVisualHome">
+            <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="80" height="100" style="display: block; margin: 0 auto;">
+              <!-- Wrist Base -->
+              <circle cx="48" cy="115" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="120" r="4" fill="white" opacity="0.85" />
+              <circle cx="72" cy="115" r="4" fill="white" opacity="0.85" />
+
+              <!-- Thumb -->
+              <circle cx="30" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="25" cy="75" r="4" fill="white" opacity="0.85" />
+
+              <!-- Index finger -->
+              <circle cx="45" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="42" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="40" cy="40" r="4" fill="white" opacity="0.85" />
+
+              <!-- Middle finger -->
+              <circle cx="60" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="55" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="35" r="4" fill="white" opacity="0.85" />
+
+              <!-- Ring finger -->
+              <circle cx="75" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="78" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="80" cy="40" r="4" fill="white" opacity="0.85" />
+
+              <!-- Pinky -->
+              <circle cx="90" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="95" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="100" cy="60" r="4" fill="white" opacity="0.85" />
+            </svg>
+          </div>
+        </div>
+        <div id="hintTextHome" style="font-family: 'Gibson', sans-serif; font-size: 1rem; margin-top: 20px;">Lift your palm to begin</div>
+    </div>
+
+  <!-- Drop-down Button (Top Right) -->
+   <div id="sceneJumpButton" style="position: absolute; top: 5%; right: 40px; cursor: pointer;">
+    <div style="padding: 10px 16px; background-color: #222; color: white; border-radius: 24px; font-size: 1rem; opacity: 0.8; display: none;">
+      Explore Scenes
+    </div>
+    <!-- Future drop-down circles will go here -->
+  </div>
+
+  <div class="infoText" style="position: absolute; bottom: 3%; transform: rotate(0deg); font-size: 0.95rem; opacity: 0.15; font-family: 'Gibson', sans-serif; color: white;">
+    This experience reacts to your movements. No clicking required.
+  </div>
+
+
+</section>
+
+
+  <canvas id="canvas"></canvas>
+  <div id="interactionPrompt" style="display: none;">
+    
+    <div id="poeticOverlay">
+      <div id="promptTextArea">
+        <div id="poeticLines">
+          <p class="line1">The stillness invites you.</p>
+          <p class="line2">Touch it, and take control.</p>
+        </div>
+        <div id="controlMessage" style="display: none;">
+          <p class="line1">You're in control.</p>
+        </div>
+        <div id="disruptMessage" style="display: none;">
+          <p class="line1">You’re disrupting the balance.</p>
+        </div>
+        <div id="interventionMessage" style="display: none;">
+          <p class="line1">Glow it all.</p>
+          <p class="line2">Heal it all.</p>
+        </div>
+      </div>
+
+      <div id="promptHintArea">
+        <div id="handHint">
+          <div id="palmHintVisual">
+            <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="80" height="100" style="display: block; margin: 0 auto;">
+              <!-- Wrist Base -->
+              <circle cx="48" cy="115" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="120" r="4" fill="white" opacity="0.85" />
+              <circle cx="72" cy="115" r="4" fill="white" opacity="0.85" />
+
+              <!-- Thumb -->
+              <circle cx="30" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="25" cy="75" r="4" fill="white" opacity="0.85" />
+
+              <!-- Index finger -->
+              <circle cx="45" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="42" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="40" cy="40" r="4" fill="white" opacity="0.85" />
+
+              <!-- Middle finger -->
+              <circle cx="60" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="55" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="35" r="4" fill="white" opacity="0.85" />
+
+              <!-- Ring finger -->
+              <circle cx="75" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="78" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="80" cy="40" r="4" fill="white" opacity="0.85" />
+
+              <!-- Pinky -->
+              <circle cx="90" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="95" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="100" cy="60" r="4" fill="white" opacity="0.85" />
+            </svg>
+          </div>
+        </div>
+        <div id="hintText">Lift and Hold your palm to begin</div>
+      </div>
+    </div>
+  
+  </div>
+
+    <div id="exitPrompt" style="display: none;">
+      <img id="promptBg2" src="dbg.png" class="promptBackground"/>
+      <img id="promptBg3" src="lbg.png" class="promptBackground"/>
+      <img id="promptBg4" src="ibg.png" class="promptBackground"/>
+      <img id="promptBg5" src="rbg.png" class="promptBackground"/>
+      <div id="poeticOverlay">
+        <div id="promptTextArea">
+          <div id="poeticLines">
+            <p class="line1">Control fades...</p>
+            <p class="line2">Step forward when you’re ready.</p>
+          </div>
+        </div>
+
+        <div id="exitHintContainer">
+        <div id="exitHandHint" class="handHint">
+          <div id="palmHintVisual">
+            <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="80" height="100">
+              <!-- Wrist Base -->
+              <circle cx="48" cy="115" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="120" r="4" fill="white" opacity="0.85" />
+              <circle cx="72" cy="115" r="4" fill="white" opacity="0.85" />
+              <!-- Thumb -->
+              <circle cx="30" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="25" cy="75" r="4" fill="white" opacity="0.85" />
+              <!-- Index finger -->
+              <circle cx="45" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="42" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="40" cy="40" r="4" fill="white" opacity="0.85" />
+              <!-- Middle finger -->
+              <circle cx="60" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="55" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="35" r="4" fill="white" opacity="0.85" />
+              <!-- Ring finger -->
+              <circle cx="75" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="78" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="80" cy="40" r="4" fill="white" opacity="0.85" />
+              <!-- Pinky -->
+              <circle cx="90" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="95" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="100" cy="60" r="4" fill="white" opacity="0.85" />
+            </svg>
+          </div>
+        </div>
+        <div id="exitHintText" style="margin-top: 12px; font-size: 1rem; color: white; opacity: 0.7; font-family: 'Gibson', sans-serif; text-align: center;">
+          Lift your palm to continue
+        </div>
+      </div>
+
+      </div>
+      <svg id="playIcon" viewBox="0 0 100 100" width="140" height="140" style="display: none;">
+        <!-- Dotted outer circle -->
+        <circle cx="50" cy="50" r="48" fill="none" stroke="white" stroke-width="2" stroke-dasharray="5,5" opacity="0.4" />
+
+        <!-- Progress ring (initially empty) -->
+        <circle id="progressCircle" cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="3"
+                stroke-dasharray="251.2" stroke-dashoffset="251.2" 
+                style="transition: stroke-dashoffset 0.1s linear;" />
+
+        <!-- Play triangle -->
+        <polygon points="40,30 70,50 40,70" fill="white" />
+      </svg>
+
+
+
+    </div>
+      <div id="startPrompt" class="start-overlay">
+      <div id="poeticOverlay">
+        <div id="promptTextArea">
+          <div id="startPoeticLines">
+            <p class="line1">The world breathes.</p>
+            <p class="line2">Touch to begin.</p>
+          </div>
+        </div>
+        <div id="startHandHint" class="handHint">
+          <div id="palmHintVisual"> 
+              <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="80" height="100">
+              <!-- Wrist Base -->
+              <circle cx="48" cy="115" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="120" r="4" fill="white" opacity="0.85" />
+              <circle cx="72" cy="115" r="4" fill="white" opacity="0.85" />
+              <!-- Thumb -->
+              <circle cx="30" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="25" cy="75" r="4" fill="white" opacity="0.85" />
+              <!-- Index finger -->
+              <circle cx="45" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="42" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="40" cy="40" r="4" fill="white" opacity="0.85" />
+              <!-- Middle finger -->
+              <circle cx="60" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="55" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="35" r="4" fill="white" opacity="0.85" />
+              <!-- Ring finger -->
+              <circle cx="75" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="78" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="80" cy="40" r="4" fill="white" opacity="0.85" />
+              <!-- Pinky -->
+              <circle cx="90" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="95" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="100" cy="60" r="4" fill="white" opacity="0.85" />
+            </svg>
+          </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+
+
+  <video id="controlVideo" style="display: none;" playsinline>
+    <source src="TheWorldInControl_wMusic.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+  </video>
+
+  <video id="lossVideo" style="display: none;" playsinline>
+    <source src="TheWorldInLoss_wMusicV2.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+  </video>
+
+  <video id="interventionVideo" style="display: none;" playsinline>
+    <source src="TheWorldInIntervention_wMusicV2.mp4" type="video/mp4">
+  </video>
+
+  <video id="reflectionVideo" style="display: none;" playsinline>
+    <source src="TheWorldInReflection_wMusicV4.mp4" type="video/mp4">
+  </video>
+
+  <div id="progressOverlay" style="display: none;">
+    <div id="loadingBarContainer">
+      <div id="loadingBar"></div>
+    </div>
+  </div>
+
+
+  <div id="reflectionContainer" style="display:none;">
+  <div id="promiseSelectSection">
+    <h2 id="reflectionHeading">What would you promise the Earth?</h2>
+    <div id="promiseList">
+      <!-- These will be dynamically filled or hardcoded -->
+      <div class="promiseBox" data-promise="I will walk more and drive less.">I will walk more and drive less
+        <svg class="promiseProgress" viewBox="0 0 300 60" preserveAspectRatio="none">
+          <!-- Background border -->
+          <rect class="progress-bg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none" stroke="#6a7ba2" stroke-width="2" opacity="0.2"/>
+          
+          <!-- Foreground animated stroke -->
+          <rect class="progress-fg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none"
+                stroke="#6a7ba2" stroke-width="3"
+                stroke-dasharray="680" stroke-dashoffset="680"
+                style="transition: stroke-dashoffset 0.2s linear;" />
+        </svg>
+      </div>
+      <div class="promiseBox" data-promise="I will support clean energy.">I will support clean energy
+        <svg class="promiseProgress" viewBox="0 0 300 60" preserveAspectRatio="none">
+          <!-- Background border -->
+          <rect class="progress-bg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none" stroke="#6a7ba2" stroke-width="2" opacity="0.2"/>
+          
+          <!-- Foreground animated stroke -->
+          <rect class="progress-fg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none"
+                stroke="#6a7ba2" stroke-width="3"
+                stroke-dasharray="680" stroke-dashoffset="680"
+                style="transition: stroke-dashoffset 0.2s linear;" />
+        </svg>
+      </div>
+      <div class="promiseBox" data-promise="I will reduce plastic use.">I will reduce plastic use
+        <svg class="promiseProgress" viewBox="0 0 300 60" preserveAspectRatio="none">
+          <!-- Background border -->
+          <rect class="progress-bg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none" stroke="#6a7ba2" stroke-width="2" opacity="0.2"/>
+          
+          <!-- Foreground animated stroke -->
+          <rect class="progress-fg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none"
+                stroke="#6a7ba2" stroke-width="3"
+                stroke-dasharray="680" stroke-dashoffset="680"
+                style="transition: stroke-dashoffset 0.2s linear;" />
+        </svg>
+      </div>
+      <div class="promiseBox" data-promise="I will plant more trees.">I will plant more trees
+        <svg class="promiseProgress" viewBox="0 0 300 60" preserveAspectRatio="none">
+          <!-- Background border -->
+          <rect class="progress-bg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none" stroke="#6a7ba2" stroke-width="2" opacity="0.2"/>
+          
+          <!-- Foreground animated stroke -->
+          <rect class="progress-fg" x="5" y="5" width="290" height="50" rx="12" ry="12" fill="none"
+                stroke="#6a7ba2" stroke-width="3"
+                stroke-dasharray="680" stroke-dashoffset="680"
+                style="transition: stroke-dashoffset 0.2s linear;" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="drawSection">
+    <div id="drawCanvasWrapper">
+      <canvas id="reflectionCanvas" width="400" height="400"></canvas>
+      <svg id="drawLoadingCircle" width="420" height="420">
+        <circle cx="210" cy="210" r="200" stroke="#ccc" stroke-width="1" fill="none" stroke-dasharray="14"/>
+        <circle id="drawProgressCircle" cx="210" cy="210" r="200" stroke="#A6BFFF" stroke-width="15" fill="none" stroke-dasharray="1194" stroke-dashoffset="1194"/>
+      </svg>
+    </div>
+  </div>
+
+  <div id="promptHintArea2" style="display: none;">
+    <div id="handHint2">
+      <div id="palmHintVisual2">
+          <svg viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg" width="80" height="100">
+              <!-- Wrist Base -->
+              <circle cx="48" cy="115" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="120" r="4" fill="white" opacity="0.85" />
+              <circle cx="72" cy="115" r="4" fill="white" opacity="0.85" />
+              <!-- Thumb -->
+              <circle cx="30" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="25" cy="75" r="4" fill="white" opacity="0.85" />
+              <!-- Index finger -->
+              <circle cx="45" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="42" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="40" cy="40" r="4" fill="white" opacity="0.85" />
+              <!-- Middle finger -->
+              <circle cx="60" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="55" r="4" fill="white" opacity="0.85" />
+              <circle cx="60" cy="35" r="4" fill="white" opacity="0.85" />
+              <!-- Ring finger -->
+              <circle cx="75" cy="80" r="4" fill="white" opacity="0.85" />
+              <circle cx="78" cy="60" r="4" fill="white" opacity="0.85" />
+              <circle cx="80" cy="40" r="4" fill="white" opacity="0.85" />
+              <!-- Pinky -->
+              <circle cx="90" cy="90" r="4" fill="white" opacity="0.85" />
+              <circle cx="95" cy="75" r="4" fill="white" opacity="0.85" />
+              <circle cx="100" cy="60" r="4" fill="white" opacity="0.85" />
+          </svg>
+      </div>
+    </div>
+    <div id="hintText2">Lift and Hold your palm to begin</div>
+  </div>
+
+</div>
+
+  <!-- Load TensorFlow.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+
+  <!-- Load TensorFlow HandPose Model -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+  <!-- <link href="https://fonts.cdnfonts.com/css/gibson" rel="stylesheet"> -->
+  <!-- Load the main script -->
+  <script src="sketch.js"></script>
+</body>
+</html>
